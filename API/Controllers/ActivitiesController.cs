@@ -25,7 +25,7 @@ namespace API.Controllers
             return await _context.Activities.ToListAsync();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}")] //Get single activity by id
         public async Task<ActionResult<Domain.Activity>> GetActivity(Guid id)
         {
             return await _context.Activities.FindAsync(id);
