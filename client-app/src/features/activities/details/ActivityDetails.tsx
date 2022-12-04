@@ -1,14 +1,12 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { Button, Card, Image } from 'semantic-ui-react';
-import { Activity } from '../../../models/activity';
+import { useStore } from '../../../app/stores/store';
 
-interface Props {
-  activity: Activity | undefined;
-  cancelSelectActivity: () => void;
-  openForm: (id: string) => void;
-}
+const ActivityDetail = () => {
+  const { activityStore } = useStore();
+  const { selectedActivity: activity } = activityStore;
 
-const ActivityDetail = ({ activity, cancelSelectActivity, openForm }: Props) => {
   return (
     <>
       {activity && (
@@ -25,13 +23,18 @@ const ActivityDetail = ({ activity, cancelSelectActivity, openForm }: Props) => 
             <Button.Group widths="2">
               <Button
                 onClick={() => {
-                  openForm(activity.id);
+                  activityStore.openForm(activity.id);
                 }}
                 basic
                 color="blue"
                 content="Edit"
               />
-              <Button onClick={cancelSelectActivity} basic color="grey" content="Cancel" />
+              <Button
+                onClick={activityStore.cancelSelectedActivity}
+                basic
+                color="grey"
+                content="Cancel"
+              />
             </Button.Group>
           </Card.Content>
         </Card>
@@ -40,4 +43,4 @@ const ActivityDetail = ({ activity, cancelSelectActivity, openForm }: Props) => 
   );
 };
 
-export default ActivityDetail;
+export default observer(ActivityDetail);
