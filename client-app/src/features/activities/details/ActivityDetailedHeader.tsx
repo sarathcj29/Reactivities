@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Header, Item, Segment, Image } from 'semantic-ui-react';
@@ -34,7 +35,7 @@ const ActivityDetailedHeader = ({ activity }: Props) => {
             <Item>
               <Item.Content>
                 <Header size="huge" content={activity.title} style={{ color: 'white' }} />
-                <p>{activity.date}</p>
+                <p>{format(activity.date!, 'dd MMM yyyy')}</p>
                 <p>
                   Hosted by <strong>Bob</strong>
                 </p>

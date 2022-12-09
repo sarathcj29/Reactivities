@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { NavLink, useHistory, useParams } from 'react-router-dom';
-import { Button, FormField, Label, Segment } from 'semantic-ui-react';
+import { Button, FormField, Header, Label, Segment } from 'semantic-ui-react';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import { useStore } from '../../../app/stores/store';
 import { v4 as uuid } from 'uuid';
@@ -9,6 +9,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import RVTextInput from '../../../app/common/form/RvTextInput';
 import RVTextArea from '../../../app/common/form/RVTextArea';
+import RVSelectInput from '../../../app/common/form/RVSelectInput';
+import { categoryOptions } from '../../../app/common/options/categoryOptions';
+import RVDateInput from '../../../app/common/form/RVDateInput';
+import { Activity } from '../../../models/activity';
 
 const ActivityForm = () => {
   const history = useHistory();
@@ -16,12 +20,12 @@ const ActivityForm = () => {
   const { createActivity, updateActivity, loading, loadActivity, loadingInitial } = activityStore;
   const { id } = useParams<{ id: string }>();
 
-  const [activity, setActivity] = useState({
+  const [activity, setActivity] = useState<Activity>({
     id: '',
     title: '',
     description: '',
     category: '',
-    date: '',
+    date: null,
     city: '',
     venue: '',
   });
@@ -30,7 +34,7 @@ const ActivityForm = () => {
     title: Yup.string().required('Activity Title is required'),
     description: Yup.string().required('Activity Description is required'),
     category: Yup.string().required('Activity Category is required'),
-    date: Yup.string().required('Activity Date is required'),
+    date: Yup.string().required('Activity Date is required').nullable(),
     venue: Yup.string().required('Activity Venue is required'),
     city: Yup.string().required('Activity City is required'),
   });
@@ -39,42 +43,52 @@ const ActivityForm = () => {
     if (id) loadActivity(id).then((activity) => setActivity(activity!));
   }, [id, loadActivity]);
 
-  // const handleSubmit = () => {
-  //   if (activity.id.length === 0) {
-  //     let newActivity = {
-  //       ...activity,
-  //       id: uuid(),
-  //     };
-  //     createActivity(newActivity).then(() => history.push(`/activities/${newActivity.id}`));
-  //   } else {
-  //     updateActivity(activity).then(() => history.push(`/activities/${activity.id}`));
-  //   }
-  // };
-
-  // const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-  //   const { name, value } = event?.target;
-  //   setActivity({ ...activity, [name]: value });
-  // };
+  const handleFormSubmit = (activity: Activity) => {
+    if (activity.id.length === 0) {
+      let newActivity = {
+        ...activity,
+        id: uuid(),
+      };
+      createActivity(newActivity).then(() => history.push(`/activities/${newActivity.id}`));
+    } else {
+      updateActivity(activity).then(() => history.push(`/activities/${activity.id}`));
+    }
+  };
 
   if (loadingInitial) return <LoadingComponent content="Loading activity..." />;
 
   return (
     <Segment clearing>
+      <Header content="Activity Details" sub color="blue" />
       <Formik
         validationSchema={validationSchema}
         enableReinitialize
         initialValues={activity}
-        onSubmit={(values) => console.log(values)}
+        onSubmit={(values) => handleFormSubmit(values)}
       >
-        {({ handleSubmit }) => (
+        {({ handleSubmit, isValid, isSubmitting, dirty }) => (
           <Form className="ui form" onSubmit={handleSubmit} autoComplete="off">
             <RVTextInput name="title" placeholder="Title" />
             <RVTextArea rows={3} placeholder="Description" name="description" />
-            <RVTextInput placeholder="Category" name="category" />
-            <RVTextInput placeholder="Date" name="date" />
+            <RVSelectInput options={categoryOptions} placeholder="Category" name="category" />
+            <RVDateInput
+              placeholderText="Date"
+              name="date"
+              showTimeSelect
+              timeCaption="time"
+              dateFormat="MMMM d, yyyy h:mm aa"
+            />
+            <Header content="Location Details" sub color="teal" />
             <RVTextInput placeholder="City" name="city" />
             <RVTextInput placeholder="Venue" name="venue" />
-            <Button loading={loading} floated="right" positive type="submit" content="Submit" />
+            <Button
+              disabled={isSubmitting || !isValid || !dirty}
+              loading={loading}
+              floated="right"
+              positive
+              type="submit"
+              content="Submit"
+            />
             <Button
               as={NavLink}
               to={`/activities`}
